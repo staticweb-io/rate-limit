@@ -1,4 +1,4 @@
-(defproject listora/ring-congestion "0.1.2"
+(defproject listora/ring-congestion "0.1.3-SNAPSHOT"
   :description "Rate limiting ring middleware"
   :url "https://github.com/listora/ring-congestion"
   :license {:name "Eclipse Public License"
