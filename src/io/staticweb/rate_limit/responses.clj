@@ -1,6 +1,8 @@
 (ns io.staticweb.rate-limit.responses
   (:require [clj-time.format :as f]))
 
+(set! *warn-on-reflection* true)
+
 (def default-response
   "The default 429 response."
   {:headers {"Content-Type" "application/json"}

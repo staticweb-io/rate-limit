@@ -3,6 +3,8 @@
             [io.staticweb.rate-limit.quota-state :as quota-state]
             [io.staticweb.rate-limit.responses :as responses]))
 
+(set! *warn-on-reflection* true)
+
 (defn wrap-rate-limit
   "Apply a rate-limit before calling `handler`.
 

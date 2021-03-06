@@ -1,6 +1,9 @@
 (ns io.staticweb.rate-limit.storage
   (:require [clj-time.core :as t]))
 
+(set! *warn-on-reflection* true)
+
+
 (defprotocol Storage
   "A protocol describing the interface for storage backends.
 

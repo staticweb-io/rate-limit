@@ -2,6 +2,8 @@
   (:require [io.staticweb.rate-limit.storage :as storage]
             [taoensso.carmine :as car]))
 
+(set! *warn-on-reflection* true)
+
 (def ttl-incr-script
   (str
    "local current = redis.call(\"incr\", KEYS[1])"

@@ -3,6 +3,8 @@
             [io.staticweb.rate-limit.responses :as r]
             [io.staticweb.rate-limit.storage :as s]))
 
+(set! *warn-on-reflection* true)
+
 (defprotocol QuotaState
   (quota-exhausted? [self])
   (increment-counter [self storage])

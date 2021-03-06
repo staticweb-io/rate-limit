@@ -1,5 +1,7 @@
 (ns io.staticweb.rate-limit.limits)
 
+(set! *warn-on-reflection* true)
+
 (defprotocol RateLimit
   "A RateLimit has to define a key, a quota, and a time-to-live.
 
