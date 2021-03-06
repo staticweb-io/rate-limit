@@ -1,6 +1,6 @@
 # rate-limit
 
-[![Clojars Project](https://img.shields.io/clojars/v/io.staticweb/rate-limit.svg)](https://clojars.org/io.staticweb/rate-limit)
+[![Clojars Project](https://img.shields.io/clojars/v/io.staticweb/rate-limit.svg)](https://clojars.org/io.staticweb/rate-limit)[![test](https://github.com/staticweb-io/rate-limit/actions/workflows/test.yml/badge.svg)](https://github.com/staticweb-io/rate-limit/actions/workflows/test.yml)
 
 A ring middleware for applying rate limiting policies to HTTP requests.
 
