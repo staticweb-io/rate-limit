@@ -1,0 +1,13 @@
+{:deps
+ {org.clojure/clojure {:mvn/version "1.10.3"}}
+ :aliases
+ {:test
+  {:extra-paths ["test"]
+   :extra-deps
+   {com.cognitect/test-runner
+    {:git/url "https://github.com/cognitect-labs/test-runner.git"
+     :sha "b6b3193fcc42659d7e46ecd1884a228993441182"}
+    com.taoensso/carmine {:mvn/version "3.1.0"}
+    compojure/compojure {:mvn/version "1.6.2"}
+    ring/ring-mock {:mvn/version "0.4.0"}}
+   :main-opts ["-m" "cognitect.test-runner"]}}}
