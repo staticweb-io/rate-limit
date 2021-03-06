@@ -1,0 +1,3 @@
+{:group-id "io.staticweb"
+ :artifact-id "rate-limit"
+ :scm-url "https://github.com/staticweb-io/rate-limit"}

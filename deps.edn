@@ -1,7 +1,11 @@
 {:deps
  {org.clojure/clojure {:mvn/version "1.10.3"}}
  :aliases
- {:test
+ {:release
+  {:extra-deps
+   {applied-science/deps-library {:mvn/version "0.4.0"}}
+   :main-opts ["-m" "applied-science.deps-library"]}
+  :test
   {:extra-paths ["test"]
    :extra-deps
    {com.cognitect/test-runner
