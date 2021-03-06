@@ -64,5 +64,5 @@
     (let [backing-atom (atom {})
           storage-a (local-storage backing-atom)
           storage-b (local-storage backing-atom)]
-      (increment-count storage-a :independent-atoms (Duration/ofSeconds 10))
-      (is (= (get-count storage-b :independent-atoms) 1)))))
+      (increment-count storage-a :shared-atom (Duration/ofSeconds 10))
+      (is (= (get-count storage-b :shared-atom) 1)))))
