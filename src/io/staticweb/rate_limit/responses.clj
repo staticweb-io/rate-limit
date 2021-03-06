@@ -1,4 +1,4 @@
-(ns congestion.responses
+(ns io.staticweb.rate-limit.responses
   (:require [clj-time.format :as f]))
 
 (def default-response

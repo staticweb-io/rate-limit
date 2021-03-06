@@ -1,6 +1,6 @@
-(ns congestion.responses-test
+(ns io.staticweb.rate-limit.responses-test
   (:require [clj-time.coerce :as c]
-            [congestion.responses :as r]
+            [io.staticweb.rate-limit.responses :as r]
             [clojure.test :refer :all]))
 
 (def response

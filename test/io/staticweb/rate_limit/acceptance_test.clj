@@ -1,10 +1,9 @@
-(ns congestion.acceptance-test
-  (:require [clj-time.core :as t]
-            [clojure.test :refer :all]
-            [compojure.core :refer :all]
-            [congestion.middleware :refer :all]
-            [congestion.storage :as s]
-            [congestion.test-utils :refer :all]
+(ns io.staticweb.rate-limit.acceptance-test
+  (:use clojure.test
+        compojure.core
+        io.staticweb.rate-limit.middleware
+        io.staticweb.rate-limit.test-utils)
+  (:require [io.staticweb.rate-limit.storage :as s]
             [ring.mock.request :as mock]))
 
 (def default-response-handler
@@ -46,15 +45,15 @@
             (is (= (:status rsp) 200))
             (is (nil? (retry-after rsp)))
             (is (= (:body rsp) "no-limit"))
-            (is (nil? (:congestion.responses/rate-limit-applied rsp)))))
+            (is (nil? (:io.staticweb.rate-limit.responses/rate-limit-applied rsp)))))
 
         (testing "rate-limited route"
           (let [rsp (app (mock/request :get "/limit"))]
             (is (= (:status rsp) 200))
             (is (nil? (retry-after rsp)))
             (is (= (:body rsp) "limit"))
-            (is (= (:congestion.responses/rate-limit-applied rsp)
-                   {:key "congestion.limits.IpRateLimit:test-localhost"
+            (is (= (:io.staticweb.rate-limit.responses/rate-limit-applied rsp)
+                   {:key "io.staticweb.rate-limit.limits.IpRateLimit:test-localhost"
                     :quota 1
                     :remaining 0})))
 
@@ -63,8 +62,8 @@
               (is (= (:status rsp) 429))
               (is (some? (retry-after rsp)))
               (is (= (:body rsp) "custom-error"))
-              (is (= (:congestion.responses/rate-limit-applied rsp)
-                     {:key "congestion.limits.IpRateLimit:test-localhost"
+              (is (= (:io.staticweb.rate-limit.responses/rate-limit-applied rsp)
+                     {:key "io.staticweb.rate-limit.limits.IpRateLimit:test-localhost"
                       :quota 1
                       :remaining 0}))))
 
@@ -74,8 +73,8 @@
               (is (= (:status rsp) 200))
               (is (nil? (retry-after rsp)))
               (is (= (:body rsp) "limit"))
-              (is (= (:congestion.responses/rate-limit-applied rsp)
-                     {:key "congestion.limits.IpRateLimit:test-localhost"
+              (is (= (:io.staticweb.rate-limit.responses/rate-limit-applied rsp)
+                     {:key "io.staticweb.rate-limit.limits.IpRateLimit:test-localhost"
                       :quota 1
                       :remaining 0})))))))))
 
@@ -102,15 +101,15 @@
             (is (= (:status rsp) 200))
             (is (nil? (retry-after rsp)))
             (is (= (:body rsp) "no-limit"))
-            (is (nil? (:congestion.responses/rate-limit-applied rsp)))))
+            (is (nil? (:io.staticweb.rate-limit.responses/rate-limit-applied rsp)))))
 
         (testing "rate-limited route"
           (let [rsp (app (mock/request :get "/limit"))]
             (is (= (:status rsp) 200))
             (is (nil? (retry-after rsp)))
             (is (= (:body rsp) "limit"))
-            (is (= (:congestion.responses/rate-limit-applied rsp)
-                   {:key "congestion.limits.IpRateLimit:test-localhost"
+            (is (= (:io.staticweb.rate-limit.responses/rate-limit-applied rsp)
+                   {:key "io.staticweb.rate-limit.limits.IpRateLimit:test-localhost"
                     :quota 1
                     :remaining 0})))
 
@@ -119,8 +118,8 @@
               (is (= (:status rsp) 429))
               (is (some? (retry-after rsp)))
               (is (= (:body rsp) "custom-error"))
-              (is (= (:congestion.responses/rate-limit-applied rsp)
-                     {:key "congestion.limits.IpRateLimit:test-localhost"
+              (is (= (:io.staticweb.rate-limit.responses/rate-limit-applied rsp)
+                     {:key "io.staticweb.rate-limit.limits.IpRateLimit:test-localhost"
                       :quota 1
                       :remaining 0}))))
 
@@ -130,8 +129,8 @@
               (is (= (:status rsp) 200))
               (is (nil? (retry-after rsp)))
               (is (= (:body rsp) "limit"))
-              (is (= (:congestion.responses/rate-limit-applied rsp)
-                     {:key "congestion.limits.IpRateLimit:test-localhost"
+              (is (= (:io.staticweb.rate-limit.responses/rate-limit-applied rsp)
+                     {:key "io.staticweb.rate-limit.limits.IpRateLimit:test-localhost"
                       :quota 1
                       :remaining 0})))))))))
 
@@ -181,7 +180,7 @@
               (is (= (:status rsp) 200))
               (is (nil? (retry-after rsp)))
               (is (= (:body rsp) "no-limit"))
-              (is (nil? (:congestion.responses/rate-limit-applied rsp))))))
+              (is (nil? (:io.staticweb.rate-limit.responses/rate-limit-applied rsp))))))
 
         (testing "route limited by second limit (HTTP method)"
           (testing "applies second limit (HTTP method)"
@@ -189,8 +188,8 @@
               (is (= (:status rsp) 200))
               (is (nil? (retry-after rsp)))
               (is (= (:body rsp) "limit"))
-              (is (= (:congestion.responses/rate-limit-applied rsp)
-                     {:key ":congestion.test-utils/method-get"
+              (is (= (:io.staticweb.rate-limit.responses/rate-limit-applied rsp)
+                     {:key ":io.staticweb.rate-limit.test-utils/method-get"
                       :quota 1
                       :remaining 0}))))
 
@@ -199,8 +198,8 @@
               (is (= (:status rsp) 429))
               (is (some? (retry-after rsp)))
               (is (= (:body rsp) "custom-error"))
-              (is (= (:congestion.responses/rate-limit-applied rsp)
-                     {:key ":congestion.test-utils/method-get"
+              (is (= (:io.staticweb.rate-limit.responses/rate-limit-applied rsp)
+                     {:key ":io.staticweb.rate-limit.test-utils/method-get"
                       :quota 1
                       :remaining 0}))))
 
@@ -210,8 +209,8 @@
               (is (= (:status rsp) 200))
               (is (nil? (retry-after rsp)))
               (is (= (:body rsp) "limit"))
-              (is (= (:congestion.responses/rate-limit-applied rsp)
-                     {:key ":congestion.test-utils/method-get"
+              (is (= (:io.staticweb.rate-limit.responses/rate-limit-applied rsp)
+                     {:key ":io.staticweb.rate-limit.test-utils/method-get"
                       :quota 1
                       :remaining 0})))))
 
@@ -221,8 +220,8 @@
               (is (= (:status rsp) 200))
               (is (nil? (retry-after rsp)))
               (is (= (:body rsp) "limit"))
-              (is (= (:congestion.responses/rate-limit-applied rsp)
-                     {:key "congestion.limits.IpRateLimit:test-localhost"
+              (is (= (:io.staticweb.rate-limit.responses/rate-limit-applied rsp)
+                     {:key "io.staticweb.rate-limit.limits.IpRateLimit:test-localhost"
                       :quota 1
                       :remaining 0}))))
 
@@ -231,8 +230,8 @@
               (is (= (:status rsp) 429))
               (is (some? (retry-after rsp)))
               (is (= (:body rsp) "{\"error\": \"Too Many Requests\"}"))
-              (is (= (:congestion.responses/rate-limit-applied rsp)
-                     {:key "congestion.limits.IpRateLimit:test-localhost"
+              (is (= (:io.staticweb.rate-limit.responses/rate-limit-applied rsp)
+                     {:key "io.staticweb.rate-limit.limits.IpRateLimit:test-localhost"
                       :quota 1
                       :remaining 0}))))
 
@@ -242,7 +241,7 @@
               (is (= (:status rsp) 200))
               (is (nil? (retry-after rsp)))
               (is (= (:body rsp) "limit"))
-              (is (= (:congestion.responses/rate-limit-applied rsp)
-                     {:key "congestion.limits.IpRateLimit:test-localhost"
+              (is (= (:io.staticweb.rate-limit.responses/rate-limit-applied rsp)
+                     {:key "io.staticweb.rate-limit.limits.IpRateLimit:test-localhost"
                       :quota 1
                       :remaining 0})))))))))

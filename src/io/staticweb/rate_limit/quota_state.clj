@@ -1,7 +1,7 @@
-(ns congestion.quota-state
-  (:require [congestion.limits :as l]
-            [congestion.responses :as r]
-            [congestion.storage :as s]))
+(ns io.staticweb.rate-limit.quota-state
+  (:require [io.staticweb.rate-limit.limits :as l]
+            [io.staticweb.rate-limit.responses :as r]
+            [io.staticweb.rate-limit.storage :as s]))
 
 (defprotocol QuotaState
   (quota-exhausted? [self])

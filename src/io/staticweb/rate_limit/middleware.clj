@@ -1,18 +1,18 @@
-(ns congestion.middleware
-  (:require [congestion.limits :as limits]
-            [congestion.quota-state :as quota-state]
-            [congestion.responses :as responses]))
+(ns io.staticweb.rate-limit.middleware
+  (:require [io.staticweb.rate-limit.limits :as limits]
+            [io.staticweb.rate-limit.quota-state :as quota-state]
+            [io.staticweb.rate-limit.responses :as responses]))
 
 (defn wrap-rate-limit
   "Apply a rate-limit before calling `handler`.
 
   Eg (wrap-rate-limit app {:storage ... :limit ... :response-builder ...})
 
-  :storage is an instance of congestion.storage/Storage and specifies
+  :storage is an instance of io.staticweb.rate-limit.storage/Storage and specifies
   the storage backend to use for storing rate-limit counter between
-  requests (cf. congestion.storage and congestion.redis-storage).
+  requests (cf. io.staticweb.rate-limit.storage and io.staticweb.rate-limit.redis-storage).
 
-  :limit is an instance of congestion.limits/RateLimit and specifies
+  :limit is an instance of io.staticweb.rate-limit.limits/RateLimit and specifies
   the semantics of the limit that is being applied to `handler`.
 
   An optional :response-builder can be provided to override the
@@ -95,7 +95,7 @@
 
   The response will include the X-RateLimit-Limit,
   X-RateLimit-Remaining and Retry-After headers and either a default
-  response (cf. congestion.responses/default-response) or the provided
+  response (cf. io.staticweb.rate-limit.responses/default-response) or the provided
   ring response.
 
   Note: if the provided response specifies a :status field, this will

@@ -1,6 +1,6 @@
-(ns congestion.test-utils
+(ns io.staticweb.rate-limit.test-utils
   (:require [clojure.test :refer :all]
-            [congestion.limits :as l]))
+            [io.staticweb.rate-limit.limits :as l]))
 
 (def default-response
   {:status 200

@@ -1,7 +1,7 @@
-(ns congestion.storage-test
+(ns io.staticweb.rate-limit.storage-test
   (:require [clj-time.core :as t]
             [clojure.test :refer :all]
-            [congestion.storage :refer :all]))
+            [io.staticweb.rate-limit.storage :refer :all]))
 
 ;; LocalStorage tests
 (deftest ^:unit test-local-storage-increments-counters

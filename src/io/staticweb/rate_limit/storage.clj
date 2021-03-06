@@ -1,4 +1,4 @@
-(ns congestion.storage
+(ns io.staticweb.rate-limit.storage
   (:require [clj-time.core :as t]
             [taoensso.carmine :as car]))
 
@@ -90,7 +90,7 @@
    "  redis.call(\"expire\", KEYS[1], ARGV[1])"
    "end"))
 
-(def prefix "congestion-")
+(def prefix "io.staticweb.rate-limit-")
 
 (defn- generate-redis-key
   [key]

@@ -1,11 +1,11 @@
-(ns congestion.middleware-test
+(ns io.staticweb.rate-limit.middleware-test
   (:require [clj-time.coerce :as c]
             [clojure.test :refer :all]
-            [congestion.limits :as l]
-            [congestion.middleware :refer :all]
-            [congestion.responses :as r]
-            [congestion.storage :as s]
-            [congestion.test-utils :refer :all]))
+            [io.staticweb.rate-limit.limits :as l]
+            [io.staticweb.rate-limit.middleware :refer :all]
+            [io.staticweb.rate-limit.responses :as r]
+            [io.staticweb.rate-limit.storage :as s]
+            [io.staticweb.rate-limit.test-utils :refer :all]))
 
 (defrecord MockStorage [counters timeouts]
   s/Storage
