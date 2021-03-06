@@ -28,7 +28,7 @@
 (defn- expired-keys
   [m ^Instant now]
   (->> (:timeouts m)
-       (filter (fn [[k ^Instant v]] (.isAfter v now)))
+       (filter (fn [[k ^Instant v]] (.isBefore v now)))
        (map first)))
 
 (defn- remove-key
