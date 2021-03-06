@@ -1,11 +1,11 @@
 (ns io.staticweb.rate-limit.middleware-test
-  (:require [clj-time.coerce :as c]
-            [clojure.test :refer :all]
-            [io.staticweb.rate-limit.limits :as l]
-            [io.staticweb.rate-limit.middleware :refer :all]
+  (:use clojure.test
+        io.staticweb.rate-limit.middleware
+        io.staticweb.rate-limit.test-utils)
+  (:require [io.staticweb.rate-limit.limits :as l]
             [io.staticweb.rate-limit.responses :as r]
-            [io.staticweb.rate-limit.storage :as s]
-            [io.staticweb.rate-limit.test-utils :refer :all]))
+            [io.staticweb.rate-limit.storage :as s])
+  (:import java.time.Duration))
 
 (defrecord MockStorage [counters timeouts]
   s/Storage
@@ -37,7 +37,7 @@
   [counters & body]
   `(binding [*storage* (->MockStorage (atom {}) (atom {}))]
      (doseq [[k# v# e#] ~counters]
-       (set-counter k# v# (c/from-date e#)))
+       (set-counter k# v# e#))
      ~@body))
 
 (defn make-request
@@ -66,17 +66,17 @@
         (is (= (s/counter-expiry *storage* :mock-limit-key) :mock-ttl)))))
 
   (testing "with exhausted limit"
-    (with-counters [[:mock-limit-key 10 #inst "2014-12-31T12:34:56Z"]]
+    (with-counters [[:mock-limit-key 10 (Duration/ofMinutes 5)]]
       (let [limit (->MockRateLimit 10 :mock-limit-key :mock-ttl)
             rsp (make-request wrap-stacking-rate-limit limit)]
         (is (= (:status rsp) 429))
         (is (= (::r/rate-limit-applied rsp) {:key :mock-limit-key
                                              :quota 10
                                              :remaining 0}))
-        (is (= (retry-after rsp) "Wed, 31 Dec 2014 12:34:56 GMT")))))
+        (is (= (retry-after rsp) "300")))))
 
   (testing "with custom 429 reponse"
-    (with-counters [[:mock-limit-key 10 #inst "2014-12-31T12:34:56Z"]]
+    (with-counters [[:mock-limit-key 10 (Duration/ofSeconds 42)]]
       (let [limit (->MockRateLimit 10 :mock-limit-key :mock-ttl)
             custom-response-handler (fn [key retry-after]
                                       {:status 418
@@ -111,7 +111,7 @@
           (is (= (s/counter-expiry *storage* :first-limit-key) :first-ttl))))))
 
   (testing "with exhausted first rate limit"
-    (with-counters [[:first-limit-key 1000 #inst "2014-12-31T12:34:56Z"]]
+    (with-counters [[:first-limit-key 1000 (Duration/ofMillis 15000)]]
       (let [first-limit (->MockRateLimit 1000 :first-limit-key :first-ttl)
             second-limit (->MockRateLimit 10 :second-limit-key :second-ttl)
             handler (-> default-response
@@ -125,12 +125,12 @@
           (is (= (::r/rate-limit-applied rsp) {:key :first-limit-key
                                                :quota 1000
                                                :remaining 0}))
-          (is (= (retry-after rsp) "Wed, 31 Dec 2014 12:34:56 GMT"))
+          (is (= (retry-after rsp) "15"))
           (is (= (s/get-count *storage* :first-limit-key) 1000))
           (is (= (s/get-count *storage* :second-limit-key) 0))))))
 
   (testing "with exhausted second rate limit"
-    (with-counters [[:second-limit-key 10 #inst "2014-12-31T12:34:56Z"]]
+    (with-counters [[:second-limit-key 10 (Duration/ofHours 3)]]
       (let [first-limit (->MockRateLimit 1000 :first-limit-key :first-ttl)
             second-limit (->MockRateLimit 10 :second-limit-key :second-ttl)
             handler (-> default-response
@@ -144,6 +144,6 @@
           (is (= (::r/rate-limit-applied rsp) {:key :second-limit-key
                                                :quota 10
                                                :remaining 0}))
-          (is (= (retry-after rsp) "Wed, 31 Dec 2014 12:34:56 GMT"))
+          (is (= (retry-after rsp) "10800"))
           (is (= (s/get-count *storage* :first-limit-key) 0))
           (is (= (s/get-count *storage* :second-limit-key) 10)))))))

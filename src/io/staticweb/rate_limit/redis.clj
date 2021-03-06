@@ -1,6 +1,7 @@
 (ns io.staticweb.rate-limit.redis
   (:require [io.staticweb.rate-limit.storage :as storage]
-            [taoensso.carmine :as car]))
+            [taoensso.carmine :as car])
+  (:import [java.time Duration Instant]))
 
 (set! *warn-on-reflection* true)
 
@@ -24,23 +25,23 @@
       (if-let [counter (car/wcar
                         conn-opts
                         (car/get redis-key))]
-        (Integer. counter)
+        (Integer/parseInt counter)
         0)))
 
   (increment-count [self key ttl]
     (let [redis-key (generate-redis-key key)
-          ttl-in-secs (-> ttl .toStandardDuration .getStandardSeconds)]
+          ttl-in-secs (-> ^Duration ttl .getSeconds)]
       (car/wcar
        conn-opts
        (car/eval* ttl-incr-script 1 redis-key ttl-in-secs))))
 
   (counter-expiry [self key]
-    (let [now (t/now)
+    (let [now (Instant/now)
           redis-key (generate-redis-key key)
           ttl (car/wcar conn-opts (car/ttl redis-key))]
       (if (neg? ttl)
         now
-        (t/plus now (t/seconds ttl)))))
+        (.plus now (Duration/ofSeconds ttl)))))
 
   (clear-counters [self]
     (let [redis-key (generate-redis-key "*")]

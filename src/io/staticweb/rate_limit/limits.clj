@@ -28,10 +28,10 @@
   (get-quota [self req])
   (get-ttl [self req]))
 
-(defrecord IpRateLimit [id quota ttl]
+(defrecord IpRateLimit [id quota ^java.time.Duration ttl]
   RateLimit
   (get-key [self req]
-    (str (.getName (type self)) id "-" (:remote-addr req)))
+    (str (.getName ^Class (type self)) id "-" (:remote-addr req)))
 
   (get-quota [self req]
     quota)

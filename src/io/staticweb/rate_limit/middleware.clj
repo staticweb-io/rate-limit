@@ -20,7 +20,7 @@
   An optional :response-builder can be provided to override the
   default 429 response. The builder must be a (fn [quota retry-after]
   ...) function where `quota` is the number of requests allowed by the
-  limit and `retry-after` is a clj-time/Joda DateTime specifying when
+  limit and `retry-after` is a java.time.Duration specifying when
   the rate-limit will be reset. The too-many-requests-response fn can
   be used as a helper in forming a proper 429 response."
   [handler {:keys [storage limit response-builder]}]
@@ -80,7 +80,7 @@
   limit in the storage (eg two IP-based limits on two different routes
   that should have independent counters).
 
-  Eg. (ip-rate-limit :my-limit 1000 (t/hours 1)) allows 1000 requests
+  Eg. (ip-rate-limit :my-limit 1000 (java.time.Duration/ofHours 1)) allows 1000 requests
   per hour per IP-address.
 
   Note: make sure that the incoming ring request has the
@@ -109,6 +109,6 @@
 
 (defn add-retry-after-header
   "Add a Retry-After header to the provided response. The
-  `retry-after` argument is expected to be a clj-time/Joda DateTime."
+  `retry-after` argument is expected to be a java.time.Duration."
   [rsp retry-after]
   (responses/add-retry-after-header rsp retry-after))

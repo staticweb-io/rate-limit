@@ -1,7 +1,7 @@
 (ns io.staticweb.rate-limit.responses-test
-  (:require [clj-time.coerce :as c]
-            [io.staticweb.rate-limit.responses :as r]
-            [clojure.test :refer :all]))
+  (:use clojure.test)
+  (:require [io.staticweb.rate-limit.responses :as r])
+  (:import java.time.Duration))
 
 (def response
   {:status 200
@@ -26,30 +26,26 @@
 
 (deftest ^:unit test-add-retry-after-header
   (testing "add-retry-after-header"
-    (let [retry-after (c/from-date #inst "2014-12-31T12:34:56Z")
-          rsp (r/add-retry-after-header {} retry-after)]
-      (is (= (get-in rsp [:headers "Retry-After"])
-             "Wed, 31 Dec 2014 12:34:56 GMT")))))
+    (let [rsp (r/add-retry-after-header {} (Duration/ofMinutes 2))]
+      (is (= (get-in rsp [:headers "Retry-After"]) "120")))))
 
 (deftest ^:unit test-too-many-requests-response
   (testing "too-many-requests-response"
     (testing "with default response"
-      (let [retry-after (c/from-date #inst "2014-12-31T12:34:56Z")
-            rsp (r/too-many-requests-response retry-after)
+      (let [rsp (r/too-many-requests-response (Duration/ofSeconds 631))
             headers (:headers rsp)]
         (is (= (:status rsp) 429))
-        (is (= (:body rsp) "{\"error\": \"Too Many Requests\"}"))
+        (is (= (:body rsp) "{\"error\":\"rate-limit-exceeded\"}"))
         (is (= (headers "Content-Type") "application/json"))
-        (is (= (headers "Retry-After") "Wed, 31 Dec 2014 12:34:56 GMT"))))
+        (is (= (headers "Retry-After") "631"))))
 
     (testing "with custom response"
       (let [custom-rsp {:headers {"Content-Type" "text/plain"}
                         :body "Hello, World!"
                         :status 418}
-            retry-after (c/from-date #inst "2014-12-31T12:34:56Z")
-            rsp (r/too-many-requests-response custom-rsp retry-after)
+            rsp (r/too-many-requests-response custom-rsp (Duration/ofSeconds 5))
             headers (:headers rsp)]
         (is (= (:status rsp) 418))
         (is (= (:body rsp) "Hello, World!"))
         (is (= (headers "Content-Type") "text/plain"))
-        (is (= (headers "Retry-After") "Wed, 31 Dec 2014 12:34:56 GMT"))))))
+        (is (= (headers "Retry-After") "5"))))))

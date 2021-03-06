@@ -3,8 +3,10 @@
         compojure.core
         io.staticweb.rate-limit.middleware
         io.staticweb.rate-limit.test-utils)
-  (:require [io.staticweb.rate-limit.storage :as s]
-            [ring.mock.request :as mock]))
+  (:require [io.staticweb.rate-limit.redis :as redis]
+            [io.staticweb.rate-limit.storage :as s]
+            [ring.mock.request :as mock])
+  (:import [java.time Duration Instant]))
 
 (def default-response-handler
   (constantly default-response))
@@ -13,7 +15,7 @@
   "A collection of functions used to instantiate the various storage
   backends."
   [s/local-storage
-   #(s/redis-storage {:spec {:host "localhost" :port 6379}})])
+   #(redis/redis-storage {:spec {:host "localhost" :port 6379}})])
 
 (defn create-storage
   [factory-fn]
@@ -24,7 +26,7 @@
   (testing "wrap-rate-limit"
     (doseq [storage-factory-fn storage-factory-fns]
       (let [storage (create-storage storage-factory-fn)
-            limit (ip-rate-limit :test 1 (t/seconds 1))
+            limit (ip-rate-limit :test 1 (Duration/ofSeconds 1))
             response-builder (fn [& args]
                                (apply too-many-requests-response
                                       {:headers
@@ -82,7 +84,7 @@
   (testing "single wrap-stacking-rate-limit instance"
     (doseq [storage-factory-fn storage-factory-fns]
       (let [storage (create-storage storage-factory-fn)
-            limit (ip-rate-limit :test 1 (t/seconds 1))
+            limit (ip-rate-limit :test 1 (Duration/ofSeconds 1))
             response-builder (partial too-many-requests-response
                                       {:headers
                                        {"Content-Type" "text/plain"}
@@ -153,10 +155,10 @@
   (testing "multiple wrap-stacking-rate-limit instance"
     (doseq [storage-factory-fn storage-factory-fns]
       (let [storage (create-storage storage-factory-fn)
-            first-limit (ip-rate-limit :test 1 (t/seconds 1))
+            first-limit (ip-rate-limit :test 1 (Duration/ofSeconds 1))
             first-config {:storage storage
                           :limit first-limit}
-            second-limit (->MethodRateLimit #{:get} 1 (t/seconds 1))
+            second-limit (->MethodRateLimit #{:get} 1 (Duration/ofSeconds 1))
             second-response-builder (partial too-many-requests-response
                                              {:headers
                                               {"Content-Type" "text/plain"}

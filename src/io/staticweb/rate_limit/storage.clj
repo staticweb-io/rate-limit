@@ -1,8 +1,10 @@
 (ns io.staticweb.rate-limit.storage
-  (:require [clj-time.core :as t]))
+  (:import [java.time Duration Instant]))
 
 (set! *warn-on-reflection* true)
 
+(defn now ^Instant []
+  (Instant/now))
 
 (defprotocol Storage
   "A protocol describing the interface for storage backends.
@@ -18,15 +20,15 @@
   will expire, ie when the rate limit is reset again."
 
   (get-count [self key])
-  (increment-count [self key ttl])
+  (increment-count [self key ^Duration ttl])
   (counter-expiry [self key])
   (clear-counters [self]))
 
 ;;; LocalStorage implementation
 (defn- expired-keys
-  [m now]
+  [m ^Instant now]
   (->> (:timeouts m)
-       (filter (fn [[k v]] (t/before? v now)))
+       (filter (fn [[k ^Instant v]] (.isAfter v now)))
        (map first)))
 
 (defn- remove-key
@@ -37,7 +39,7 @@
 
 (defn- remove-expired-keys
   [state]
-  (doseq [k (expired-keys @state (t/now))]
+  (doseq [k (expired-keys @state (now))]
     (swap! state remove-key k)))
 
 (defn- increment-key
@@ -45,13 +47,13 @@
 
   If the counter didn't exist already, we also record the time when
   the counter expires."
-  [state key ttl]
+  [state key ^Duration ttl]
   (if (get-in state [:counters key])
     (update-in state [:counters key] inc)
     (->
      state
      (assoc-in [:counters key] 1)
-     (assoc-in [:timeouts key] (t/plus (t/now) ttl)))))
+     (assoc-in [:timeouts key] (.plus (now) ttl)))))
 
 (defrecord LocalStorage [state]
   Storage
@@ -66,7 +68,7 @@
   (counter-expiry [self key]
     (if-let [timeout (get-in @state [:timeouts key])]
       timeout
-      (t/now)))
+      (now)))
 
   (clear-counters [self]
     (reset! state {})))
