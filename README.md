@@ -1,6 +1,6 @@
-# ring-congestion
+# rate-limit
 
-[![Build Status](https://travis-ci.org/listora/ring-congestion.svg?branch=master)](https://travis-ci.org/listora/ring-congestion)
+[![Clojars Project](https://img.shields.io/clojars/v/io.staticweb/rate-limit.svg)](https://clojars.org/io.staticweb/rate-limit)
 
 A ring middleware for applying rate limiting policies to HTTP requests.
 
@@ -22,8 +22,10 @@ implementing the `Storage` protocol.
 
 ## Usage
 
+Add to deps.edn:
+
 ```clj
-[listora/ring-congestion "0.1.2"]
+io.staticweb/rate-limit {:mvn/version "0.2.0"}
 ```
 
 The middleware is used by wrapping a ring request handler with either
@@ -42,16 +44,15 @@ Let's start with the simplest possible use case: limiting requests to
 Requests` response when the rate limit is exhausted.
 
 ```clj
-(require '[clj-time.core :as t])
-(require '[compojure.core :refer :all])
-(require '[congestion.middleware :refer [wrap-rate-limit]])
-(require '[congestion.storage :as storage])
+(use 'compojure.core)
+(require '[io.staticweb.rate-limit.middleware :refer [wrap-rate-limit]])
+(require '[io.staticweb.rate-limit.storage :as storage])
 
 ;; Instantiate a storage backend
 (def storage (storage/local-storage))
 
 ;; Define the rate limit: 1 req/s per IP address
-(def limit (ip-rate-limit :limit-id 1 (t/seconds 1)))
+(def limit (ip-rate-limit :limit-id 1 (java.time.Duration/ofSeconds 1)))
 
 ;; Define the middleware configuration
 (def rate-limit-config {:storage storage :limit limit})
@@ -111,10 +112,9 @@ authenticates or not would mean that an authenticated user could only
 perform `100 req/h` rather than the intended `5000 req/h`.
 
 ```clj
-(require '[clj-time.core :as t])
-(require '[compojure.core :refer :all])
-(require '[congestion.middleware :refer [wrap-rate-limit]])
-(require '[congestion.storage :as storage])
+(use 'compojure.core)
+(require '[io.staticweb.rate-limit.middleware :refer [wrap-rate-limit]])
+(require '[io.staticweb.rate-limit.storage :as storage])
 
 ;; A custom per-user rate limit
 (defrecord UserRateLimit [id quota ttl]
@@ -133,12 +133,12 @@ perform `100 req/h` rather than the intended `5000 req/h`.
 
 ;; Define a limit and config for unauthenticated requests: 100 req/h
 ;; per IP address
-(def unauthenticated-limit (ip-rate-limit :unauthenticated-limit 100 (t/hours 1)))
+(def unauthenticated-limit (ip-rate-limit :unauthenticated-limit 100 (java.time.Duration/ofHours 1)))
 (def unauthenticated-config {:storage storage :limit unauthenticated-limit})
 
 ;; Define a limit and config for authenticated requests: 5000 req/h
 ;; per user
-(def user-limit (->UserRateLimit :user-limit 5000 (t/hours 1)))
+(def user-limit (->UserRateLimit :user-limit 5000 (java.time.Duration/ofHours 1)))
 (def user-config {:storage storage :limit user-limit})
 
 (defn wrap-authentication
@@ -175,9 +175,9 @@ ring response to this effect. The library provides a default response
 builder, which returns a JSON `429` response:
 
 ```clj
-{:body "{\"error\": \"Too Many Requests\"}"
+{:body "{\"error\":\"rate-limit-exceeded\"}"
  :headers {"Content-Type" "application/json"
-           "Retry-After" "Fri, 28 Nov 2014 12:03:55 GMT"}
+           "Retry-After" "30"}
  :status 429}
 ```
 
@@ -198,8 +198,8 @@ The middleware configuration accepts a custom response builder as the
 
 The response builder takes two arguments: `quota` and `retry-after`,
 where `quota` is the number of requests allowed by the limit that has
-been exhausted and `retry-after` is the time when the rate limit
-counter will be reset.
+been exhausted and `retry-after` is the number of seconds until the rate
+limit counter will be reset.
 
 The simplest way to build an appropriate `429 - Too Many Requests`
 response is to call the `too-many-requests-response` function with a
@@ -215,9 +215,9 @@ your custom response builder.
 
 When a rate limit is applied to a request, the library `assoc`s the
 quota state to the ring response with the key
-`:congestion.responses/rate-limit-applied`. The quota state is either
+`:io.staticweb.rate-limit.responses/rate-limit-applied`. The quota state is either
 `AvailableQuota` or `ExhaustedQuota` as defined in
-`congestion.quota-state`.
+`io.staticweb.rate-limit.quota-state`.
 
 This serves two purposes: 1) it allows stacked rate limiting
 middleware to work out if a rate limit has already been applied, and
@@ -277,7 +277,7 @@ on the request. E.g. we could define a custom rate limit for each user
 of our application, where both the quota and the TTL would be looked
 up from the user database after the user has been authenticated.
 
-The easiest way to do this with ring-congestion would be to attach the
+The easiest way to do this with `rate-limit` would be to attach the
 rate limit information to the request, e.g. in the authentication
 middleware, and then simply look them up from the request in
 `get-quota` and `get-ttl`:
@@ -330,8 +330,8 @@ the current value of the counter, or `0` if the counter does not
 exist.
 
 `increment-count` is provided again with a counter key, and a
-time-to-live, which is a clj-time/JodaTime duration
-(e.g. `(clj-time.core/hours 1)`). The `ttl` argument is used to
+time-to-live, which is a java.time.Duration (e.g.
+`(java.time.Duration/ofHours 1)`). The `ttl` argument is used to
 schedule the deletion of the counter after the counter expires, so
 it's only really significant if the counter does not exist already.
 
@@ -346,8 +346,8 @@ to generate the `Retry-After` header for the `429 - Too Many Requests`
 response.
 
 Note: the `RedisStorage` storage implementation prefixes all limit
-keys with the string `congestion-`. The idea is to underline that
-those Redis keys belong to ring-congestion in cases where the same
+keys with the string `io.staticweb.rate-limit-`. The idea is to underline that
+those Redis keys belong to `rate-limit` in cases where the same
 Redis instance is used to store other application data as well. Having
 a common prefix makes the implementation of the `clear-counters`
 function simple as well.
@@ -410,7 +410,7 @@ application.
 
 Another side effect of caching responses is that any remaining rate
 limit headers might not be valid when the response is served from a
-cache. Therefore ring-congestion doesn't set any HTTP headers
+cache. Therefore `rate-limit` doesn't set any HTTP headers
 reporting the total or remaining quota. Fortunately you can do it
 yourself with a simple ring middleware!
 
