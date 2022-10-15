@@ -2,8 +2,8 @@
  {org.clojure/clojure {:mvn/version "1.10.3"}}
  :aliases
  {:antq
-  {:deps {com.github.liquidz/antq {:mvn/version "2.1.920"}
-          org.slf4j/slf4j-nop {:mvn/version "1.7.32"}}}
+  {:deps {com.github.liquidz/antq {:mvn/version "2.1.932"}
+          org.slf4j/slf4j-nop {:mvn/version "2.0.3"}}}
   :release
   {:extra-deps
    {applied-science/deps-library {:mvn/version "0.4.0"}}
@@ -13,8 +13,8 @@
    :extra-deps
    {com.cognitect/test-runner
     {:git/url "https://github.com/cognitect-labs/test-runner.git"
-     :sha "b6b3193fcc42659d7e46ecd1884a228993441182"}
+     :sha "a522ab2851a2aa5bf9c22a942b45287a3a019310"}
     com.taoensso/carmine {:mvn/version "3.1.0"}
-    compojure/compojure {:mvn/version "1.6.2"}
+    compojure/compojure {:mvn/version "1.7.0"}
     ring/ring-mock {:mvn/version "0.4.0"}}
    :main-opts ["-m" "cognitect.test-runner"]}}}
