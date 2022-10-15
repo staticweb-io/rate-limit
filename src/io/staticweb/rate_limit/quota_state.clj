@@ -1,7 +1,8 @@
 (ns io.staticweb.rate-limit.quota-state
   (:require [io.staticweb.rate-limit.limits :as l]
             [io.staticweb.rate-limit.responses :as r]
-            [io.staticweb.rate-limit.storage :as s]))
+            [io.staticweb.rate-limit.storage :as s])
+  (:import [java.time Duration Instant]))
 
 (set! *warn-on-reflection* true)
 
@@ -70,6 +71,9 @@
           current-count (s/get-count storage key)
           remaining-requests (- quota current-count 1)]
       (if (neg? remaining-requests)
-        (->ExhaustedQuota key (s/counter-expiry storage key) quota)
+        (->ExhaustedQuota
+         key
+         (Duration/between (Instant/now) (s/counter-expiry storage key))
+         quota)
         (->AvailableQuota key ttl quota remaining-requests)))
     (->UnlimitedQuota)))
