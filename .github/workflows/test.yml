@@ -7,13 +7,15 @@ on:
   pull_request:
     branches:
     - master
+
 jobs:
   test:
+    timeout-minutes: 15
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         id: cache
         with:
           key: ${{ runner.os }}-rate-limit-${{ hashFiles('**/deps.edn') }}
@@ -21,14 +23,10 @@ jobs:
           path: |
             ~/.gitlibs
             ~/.m2
-            deps
 
-      - uses: actions/setup-java@v1
-        with:
-          java-version: 1.8
+      - name: Install Nix
+        uses: cachix/install-nix-action@v18
 
-      - uses: DeLaGuardo/setup-clojure@3.1
-        with:
-          cli: '1.10.2.796'
+      - run: nix-build
 
-      - run: clojure -M:test -e :redis
+      - run: nix-shell --run "clojure -M:test -e :redis"
