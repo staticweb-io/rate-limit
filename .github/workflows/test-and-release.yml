@@ -1,12 +1,9 @@
-name: test
+name: Test & Release
 
 on:
   push:
-    branches:
-    - master
-  pull_request:
-    branches:
-    - master
+    tags:
+      - "v*"
 
 jobs:
   test:
@@ -29,4 +26,10 @@ jobs:
 
       - run: nix-build
 
-      - run: nix-shell --run "clj -T:build ci :snapshot true"
+      - run: nix-shell --run "clj -T:build ci :snapshot false"
+
+      - name: Deploy release jar
+        run: nix-shell --run "clojure -T:build deploy :snapshot false"
+        env:
+          CLOJARS_PASSWORD: ${{secrets.CLOJARS_PASSWORD}}
+          CLOJARS_USERNAME: ${{secrets.CLOJARS_USERNAME}}
