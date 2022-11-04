@@ -22,12 +22,6 @@ implementing the `Storage` protocol.
 
 ## Usage
 
-Add to deps.edn:
-
-```clj
-io.staticweb/rate-limit {:mvn/version "0.2.0"}
-```
-
 The middleware is used by wrapping a ring request handler with either
 `wrap-rate-limit` or `wrap-stacking-rate-limit`. For both functions
 the first argument is the ring request handler to wrap, and the second
