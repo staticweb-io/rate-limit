@@ -15,18 +15,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/cache@v3
-        id: cache
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v9
+
+      - name: Run the Magic Nix Cache
+        uses: DeterminateSystems/magic-nix-cache-action@v2
+
+      - name: Cache Clojure dependencies
+        uses: actions/cache@v3
         with:
-          key: ${{ runner.os }}-rate-limit-${{ hashFiles('**/deps.edn') }}
-          restore-keys: ${{ runner.os }}-rate-limit
+          key: clj-${{ github.repository }}-${{ hashFiles('**/deps.edn') }}
+          restore-keys: clj-${{ github.repository }}-
           path: |
             ~/.gitlibs
-            ~/.m2
+            ~/.m2/repository
 
-      - name: Install Nix
-        uses: cachix/install-nix-action@v24
-
-      - run: nix-build
-
-      - run: nix-shell --run "clj -T:build ci :snapshot true"
+      - name: Run tests
+        run: nix develop -c clj -T:build ci :snapshot true
