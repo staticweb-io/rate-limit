@@ -39,7 +39,7 @@ Requests` response when the rate limit is exhausted.
 
 ```clj
 (use 'compojure.core)
-(require '[io.staticweb.rate-limit.middleware :refer [wrap-rate-limit]])
+(require '[io.staticweb.rate-limit.middleware :refer [ip-rate-limit wrap-rate-limit]])
 (require '[io.staticweb.rate-limit.storage :as storage])
 
 ;; Instantiate a storage backend
@@ -107,7 +107,7 @@ perform `100 req/h` rather than the intended `5000 req/h`.
 
 ```clj
 (use 'compojure.core)
-(require '[io.staticweb.rate-limit.middleware :refer [wrap-rate-limit]])
+(require '[io.staticweb.rate-limit.middleware :refer [ip-rate-limit wrap-rate-limit wrap-stacking-rate-limit]])
 (require '[io.staticweb.rate-limit.storage :as storage])
 
 ;; A custom per-user rate limit
