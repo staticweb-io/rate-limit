@@ -16,13 +16,13 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v9
+        uses: DeterminateSystems/nix-installer-action@v14
 
       - name: Run the Magic Nix Cache
-        uses: DeterminateSystems/magic-nix-cache-action@v2
+        uses: DeterminateSystems/magic-nix-cache-action@v8
 
       - name: Cache Clojure dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           key: clj-${{ github.repository }}-${{ hashFiles('**/deps.edn') }}
           restore-keys: clj-${{ github.repository }}-
