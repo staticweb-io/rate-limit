@@ -2,6 +2,8 @@
 
 [![Clojars Project](https://img.shields.io/clojars/v/io.staticweb/rate-limit.svg)](https://clojars.org/io.staticweb/rate-limit)[![test](https://github.com/staticweb-io/rate-limit/actions/workflows/test.yml/badge.svg)](https://github.com/staticweb-io/rate-limit/actions/workflows/test.yml)
 
+**This is a fork of [liwp/ring-congestion](https://github.com/liwp/ring-congestion).**
+
 A ring middleware for applying rate limiting policies to HTTP requests.
 
 The middleware is used to implement request rate limits on HTTP
